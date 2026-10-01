@@ -4,9 +4,8 @@ Your home on a 42 machine is capped at about 5 GB. Caches, `node_modules` and
 editor extensions eat most of it, and deleting them is pointless because they
 come straight back.
 
-`/goinfre/$USER` is local scratch space on the same machine with hundreds of GB
-free. linx moves the regenerable directories there and leaves a symlink behind,
-so every app still finds its files and none of it counts against your quota.
+linx moves the regenerable directories to ur goinfre and leaves a symlink behind
+so every app still finds its files and none of it counts against your quota
 
 ## Use it
 
@@ -22,7 +21,7 @@ linx scanning /home/aaitabde -> /goinfre/aaitabde/cache
 
   #    size  what
   1    848 MB  .var/app/com.visualstudio.code/data/vscode/extensions
-  2    635 MB  incident-lifecycle-manager/backend/node_modules
+  2    635 MB  hyperTube/backend/node_modules
   3    120 MB  .var/app/com.google.Chrome/config/google-chrome/screen_ai
   4     18 MB  .var/app/com.visualstudio.code/config/Code/WebStorage/1/CacheStorage  <- code is RUNNING
      1621 MB movable in total
