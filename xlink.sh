@@ -10,6 +10,7 @@
 #   ./xlink.sh            scan, then ask what to move
 #   ./xlink.sh -y         move everything, no questions
 #   ./xlink.sh -n         dry run, change nothing
+#   ./xlink.sh -u         undo: turn every xlink symlink back into a real dir
 #   ./xlink.sh -q         restore-only, silent (put this in ~/.zshrc or ~/.bashrc)
 #   MIN_MB=10 ./xlink.sh  also move dirs smaller than the 25 MB default
 #
@@ -33,9 +34,19 @@ pretty() { case $1 in */*) printf '%s' "${D}${1%/*}/${X}${B}${1##*/}${X}";; *) p
 mkdir -p "$STORE" || exit 1
 
 # --- restore: any symlink of ours whose target vanished (new machine) gets it back
-find "$HOME" -maxdepth 7 -xtype l -lname "$STORE/*" -print0 2>/dev/null |
+find "$HOME" -maxdepth 12 -xtype l -lname "$STORE/*" -print0 2>/dev/null |
     while IFS= read -r -d '' l; do mkdir -p "$(readlink "$l")"; done
 [ "$mode" = -q ] && exit 0
+
+# --- undo: swap every xlink symlink back for a real dir (leave goinfre behind)
+if [ "$mode" = -u ]; then
+    find "$HOME" -maxdepth 12 -lname "$STORE/*" -print0 2>/dev/null |
+        while IFS= read -r -d '' l; do
+            t=$(readlink "$l"); rm "$l" && mkdir "$l" && cp -a "$t"/. "$l"/ &&
+                echo "${G}-${X} restored $(pretty "${l#$HOME/}")"
+        done
+    exit 0
+fi
 
 # --- discover: what is worth moving, found fresh every run
 candidates() {
@@ -47,7 +58,7 @@ candidates() {
     done
     # flatpak apps: every cache-shaped dir, plus editor extension stores.
     # -prune so we never descend into a cache to find caches inside it.
-    [ -d "$HOME/.var/app" ] && find "$HOME/.var/app" -maxdepth 8 -type d \
+    [ -d "$HOME/.var/app" ] && find "$HOME/.var/app" -maxdepth 8 \( -name site-packages -o -name extensions \) -prune -o -type d \
         \( -iname cache -o -iname 'Cache*' -o -iname 'Code Cache' -o -iname GPUCache \
            -o -iname CacheStorage -o -iname ScriptCache -o -iname '*_crx_cache' \
            -o -iname 'File System' -o -iname ShaderCache \
